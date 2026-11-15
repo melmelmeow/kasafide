@@ -33,18 +33,33 @@ export function LoginForm({ next }: { next?: string }) {
       }
 
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { data: signinData, error: authError } = await supabase.auth.signInWithPassword({
         email: emailValue,
         password: passwordValue,
       });
-      if (authError) {
+      if (authError || !signinData?.user) {
         console.error("[Auth] signInWithPassword error:", authError);
-        setError(authError.message || "Wrong email or password, or the email is not verified yet.");
+        setError(authError?.message || "Wrong email or password, or the email is not verified yet.");
         return;
       }
-      const target = safeNext(next);
-      router.replace(target ?? "/auth/continue");
-      router.refresh();
+
+      // Check role directly to navigate to destination immediately
+      let destination = safeNext(next);
+      if (!destination) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", signinData.user.id)
+          .maybeSingle();
+
+        const role = profile?.role || signinData.user.user_metadata?.role || "buyer";
+        if (role === "seller") destination = "/seller/dashboard";
+        else if (role === "admin" || role === "superadmin" || role === "super_duper_admin") destination = "/admin/dashboard";
+        else destination = "/buyer/dashboard";
+      }
+
+      // Full navigation to ensure server components read the new cookie
+      window.location.href = destination;
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -154,7 +169,7 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -162,28 +177,42 @@ export function SignupForm() {
       setError("Please agree to the Terms of Service and Privacy Policy.");
       return;
     }
-    if (password !== confirmPassword) {
+
+    const fd = new FormData(e.currentTarget);
+    const lastNameVal = String(fd.get("lastName") || lastName).trim();
+    const firstNameVal = String(fd.get("firstName") || firstName).trim();
+    const miVal = String(fd.get("mi") || mi).trim();
+    const emailVal = String(fd.get("email") || email).trim();
+    const phoneVal = String(fd.get("phone") || phone).trim();
+    const passwordVal = String(fd.get("password") || password);
+    const confirmPasswordVal = String(fd.get("confirmPassword") || confirmPassword);
+
+    if (!firstNameVal || !lastNameVal || !emailVal) {
+      setError("Please fill in all required name and email fields.");
+      return;
+    }
+    if (passwordVal !== confirmPasswordVal) {
       setError("Passwords do not match.");
       return;
     }
-    if (password.length < 8) {
+    if (passwordVal.length < 8) {
       setError("Password must be at least 8 characters long.");
       return;
     }
 
     setLoading(true);
     try {
-      const formattedPhone = phone ? `+63${phone.replace(/\D/g, "")}` : undefined;
+      const formattedPhone = phoneVal ? `+63${phoneVal.replace(/\D/g, "")}` : undefined;
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          middleInitial: mi.trim(),
-          email: email.trim(),
+          firstName: firstNameVal,
+          lastName: lastNameVal,
+          middleInitial: miVal,
+          email: emailVal,
           phone: formattedPhone,
-          password,
+          password: passwordVal,
           role,
         }),
       });
@@ -243,6 +272,7 @@ export function SignupForm() {
             <label className="field-label">Name</label>
             <div className="name-row">
               <input
+                name="lastName"
                 className="field-input"
                 type="text"
                 placeholder="Surname"
@@ -251,6 +281,7 @@ export function SignupForm() {
                 required
               />
               <input
+                name="firstName"
                 className="field-input"
                 type="text"
                 placeholder="First Name"
@@ -259,6 +290,7 @@ export function SignupForm() {
                 required
               />
               <input
+                name="mi"
                 className="field-input mi"
                 type="text"
                 placeholder="M.I."
@@ -273,6 +305,7 @@ export function SignupForm() {
             <div className="field-group">
               <label className="field-label">Email</label>
               <input
+                name="email"
                 className="field-input full"
                 type="email"
                 placeholder="Enter your email"
@@ -288,6 +321,7 @@ export function SignupForm() {
               <div className="phone-input">
                 <span className="phone-prefix">+63</span>
                 <input
+                  name="phone"
                   className="field-input"
                   type="tel"
                   inputMode="numeric"
@@ -305,6 +339,7 @@ export function SignupForm() {
               <label className="field-label">Password</label>
               <div className="input-eye">
                 <input
+                  name="password"
                   className="field-input full"
                   type={showPassword ? "text" : "password"}
                   placeholder="Create password"
@@ -330,6 +365,7 @@ export function SignupForm() {
               <label className="field-label">Confirm Password</label>
               <div className="input-eye">
                 <input
+                  name="confirmPassword"
                   className="field-input full"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Re-enter password"
