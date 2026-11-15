@@ -2,11 +2,12 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
-export type AppRole = "buyer" | "seller" | "admin" | "superadmin" | "super_duper_admin";
+export type AppRole = "buyer" | "seller" | "admin" | "super_admin" | "superadmin" | "super_duper_admin";
 
-export const ADMIN_ROLES: AppRole[] = ["admin", "superadmin", "super_duper_admin"];
+export const ADMIN_ROLES: AppRole[] = ["admin", "super_admin", "superadmin", "super_duper_admin"];
+export const SUPER_ADMIN_ROLES: AppRole[] = ["super_admin", "superadmin", "super_duper_admin"];
 
 export type Me = {
   supabase: SupabaseClient;
@@ -25,7 +26,7 @@ export type Me = {
 
 /** The signed-in user and their profile, or null. Cached per request, so layouts and pages share one lookup. */
 export const getMe = cache(async (): Promise<Me | null> => {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -53,20 +54,23 @@ export const getMe = cache(async (): Promise<Me | null> => {
   };
 });
 
-export function homeFor(role: AppRole): string {
-  if (role === "seller") return "/seller/dashboard";
-  if (ADMIN_ROLES.includes(role)) return "/admin/dashboard";
-  return "/buyer/dashboard";
+export function homeFor(role: AppRole | string): string {
+  if (role === "seller") return "/seller";
+  if (role === "admin") return "/admin";
+  if (SUPER_ADMIN_ROLES.includes(role as AppRole)) return "/super-admin";
+  return "/buyer";
 }
 
 /**
- * Gate for Server Components. Call it at the top of every page — not just the layout — because a
- * layout is not re-rendered when someone navigates between its child pages, so a layout-only check
- * is not a reliable gate. Anyone who is not allowed is redirected, never shown the page.
+ * Gate for Server Components. Call it at the top of protected pages/layouts.
  */
 export async function requireRole(allowed: AppRole[], returnTo?: string): Promise<Me> {
   const me = await getMe();
-  if (!me) redirect(`/auth/login${returnTo ? `?next=${encodeURIComponent(returnTo)}` : ""}`);
-  if (!allowed.includes(me.profile.role)) redirect(homeFor(me.profile.role));
+  if (!me) {
+    redirect(`/auth/login${returnTo ? `?next=${encodeURIComponent(returnTo)}` : ""}`);
+  }
+  if (!allowed.includes(me.profile.role)) {
+    redirect(homeFor(me.profile.role));
+  }
   return me;
 }
