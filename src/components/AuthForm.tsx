@@ -2,67 +2,41 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-
-function safeNext(next: string | null | undefined): string | null {
-  return next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : null;
-}
+import { signInAction } from "@/app/auth/actions";
 
 export function LoginForm({ next }: { next?: string }) {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    const fd = new FormData(e.currentTarget);
+    const emailValue = (String(fd.get("email") || email)).trim();
+    const passwordValue = String(fd.get("password") || password);
+
+    if (!emailValue || !passwordValue) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const fd = new FormData(e.currentTarget);
-      const emailValue = (String(fd.get("email") || email)).trim();
-      const passwordValue = String(fd.get("password") || password);
-
-      if (!emailValue || !passwordValue) {
-        setError("Please enter both email and password.");
+      const res = await signInAction(null, fd);
+      if (res?.error) {
+        setError(res.error);
         setLoading(false);
-        return;
       }
-
-      const supabase = createClient();
-      const { data: signinData, error: authError } = await supabase.auth.signInWithPassword({
-        email: emailValue,
-        password: passwordValue,
-      });
-      if (authError || !signinData?.user) {
-        console.error("[Auth] signInWithPassword error:", authError);
-        setError(authError?.message || "Wrong email or password, or the email is not verified yet.");
-        return;
+    } catch (err: unknown) {
+      // In Next.js, redirect() throws a NEXT_REDIRECT error which should not be caught as an error
+      if (err && typeof err === "object" && "digest" in err && String((err as { digest: string }).digest).startsWith("NEXT_REDIRECT")) {
+        throw err;
       }
-
-      // Check role directly to navigate to destination immediately
-      let destination = safeNext(next);
-      if (!destination) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", signinData.user.id)
-          .maybeSingle();
-
-        const role = profile?.role || signinData.user.user_metadata?.role || "buyer";
-        if (role === "seller") destination = "/seller/dashboard";
-        else if (role === "admin" || role === "superadmin" || role === "super_duper_admin") destination = "/admin/dashboard";
-        else destination = "/buyer/dashboard";
-      }
-
-      // Full navigation to ensure server components read the new cookie
-      window.location.href = destination;
-    } catch {
       setError("Something went wrong. Please try again.");
-    } finally {
       setLoading(false);
     }
   }
@@ -76,10 +50,13 @@ export function LoginForm({ next }: { next?: string }) {
       <h1 className="auth-title">Welcome Back</h1>
       <p className="auth-sub">Sign in to access your Kasafide account</p>
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit}>
+        {next && <input type="hidden" name="next" value={next} />}
+
         <div className="field-group">
-          <label className="field-label">Email</label>
+          <label className="field-label" htmlFor="email-input">Email</label>
           <input
+            id="email-input"
             name="email"
             className="field-input full"
             type="email"
@@ -92,9 +69,10 @@ export function LoginForm({ next }: { next?: string }) {
         </div>
 
         <div className="field-group">
-          <label className="field-label">Password</label>
+          <label className="field-label" htmlFor="password-input">Password</label>
           <div className="input-eye">
             <input
+              id="password-input"
               name="password"
               className="field-input full"
               type={showPassword ? "text" : "password"}
@@ -241,6 +219,8 @@ export function SignupForm() {
         <p className="auth-sub">Join Kasafide to find your dream property.</p>
 
         <form onSubmit={onSubmit}>
+          <input type="hidden" name="role" value={role} />
+
           <div className="field-group">
             <label className="field-label">I am registering as a…</label>
             <div className="role-toggle">
