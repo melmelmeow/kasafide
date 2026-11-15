@@ -17,15 +17,25 @@ export function LoginForm({ next }: { next?: string }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
+      const fd = new FormData(e.currentTarget);
+      const emailValue = (String(fd.get("email") || email)).trim();
+      const passwordValue = String(fd.get("password") || password);
+
+      if (!emailValue || !passwordValue) {
+        setError("Please enter both email and password.");
+        setLoading(false);
+        return;
+      }
+
       const supabase = createClient();
       const { error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
+        email: emailValue,
+        password: passwordValue,
       });
       if (authError) {
         console.error("[Auth] signInWithPassword error:", authError);
@@ -33,7 +43,7 @@ export function LoginForm({ next }: { next?: string }) {
         return;
       }
       const target = safeNext(next);
-      router.push(target ?? "/auth/continue");
+      router.replace(target ?? "/auth/continue");
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
@@ -55,6 +65,7 @@ export function LoginForm({ next }: { next?: string }) {
         <div className="field-group">
           <label className="field-label">Email</label>
           <input
+            name="email"
             className="field-input full"
             type="email"
             value={email}
@@ -69,6 +80,7 @@ export function LoginForm({ next }: { next?: string }) {
           <label className="field-label">Password</label>
           <div className="input-eye">
             <input
+              name="password"
               className="field-input full"
               type={showPassword ? "text" : "password"}
               value={password}
