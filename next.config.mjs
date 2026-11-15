@@ -48,9 +48,7 @@ const nextConfig = {
       { source: "/super-admin/audit-trail", destination: "/module/super-admin/audit-trail.html" },
       { source: "/super-admin/reports",     destination: "/module/super-admin/reports.html" },
 
-      { source: "/auth/signin",          destination: "/auth/signin.html" },
-      { source: "/auth/login",           destination: "/auth/signin.html" },
-      { source: "/auth/signup",          destination: "/auth/signup.html" },
+      { source: "/auth/signin",          destination: "/auth/login" },
       { source: "/auth/forgot-password", destination: "/auth/forgot-password.html" },
 
       { source: "/about",          destination: "/about.html" },

@@ -66,7 +66,7 @@ export function homeFor(role: AppRole): string {
  */
 export async function requireRole(allowed: AppRole[], returnTo?: string): Promise<Me> {
   const me = await getMe();
-  if (!me) redirect(`/auth/signin.html${returnTo ? `?redirect=${encodeURIComponent(returnTo)}` : ""}`);
+  if (!me) redirect(`/auth/login${returnTo ? `?next=${encodeURIComponent(returnTo)}` : ""}`);
   if (!allowed.includes(me.profile.role)) redirect(homeFor(me.profile.role));
   return me;
 }

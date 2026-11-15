@@ -15,8 +15,8 @@ export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request);
 
   if (!user && PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    const login = new URL("/auth/signin.html", request.url);
-    login.searchParams.set("redirect", pathname + request.nextUrl.search);
+    const login = new URL("/auth/login", request.url);
+    login.searchParams.set("next", pathname + request.nextUrl.search);
     return NextResponse.redirect(login);
   }
 
