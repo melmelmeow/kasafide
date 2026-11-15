@@ -46,6 +46,7 @@ export function QrPaymentModal({
       cleanup();
     }
     return () => cleanup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const cleanup = () => {

@@ -234,8 +234,9 @@ void main() {
   // True when WebGL is being drawn by the CPU (SwiftShader, llvmpipe, "Microsoft Basic Render").
   function isSoftwareRenderer(gl) {
     try {
-      const info = gl.getExtension('WEBGL_debug_renderer_info');
-      const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || '');
+      const info = typeof gl.getExtension === 'function' ? gl.getExtension('WEBGL_debug_renderer_info') : null;
+      const param = info && info.UNMASKED_RENDERER_WEBGL ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER;
+      const name = String(gl.getParameter(param) || '');
       return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name);
     } catch (e) { return false; }
   }
