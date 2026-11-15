@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAuthOrigin } from "@/lib/auth/google";
 
 const ROLE_DASHBOARD: Record<string, string> = {
   buyer: "/buyer/dashboard",
@@ -10,7 +11,8 @@ const ROLE_DASHBOARD: Record<string, string> = {
 };
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const origin = getAuthOrigin(request);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
 

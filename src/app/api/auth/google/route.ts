@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGoogleConfig, buildGoogleAuthUrl } from '@/lib/auth/google';
+import { getGoogleConfig, buildGoogleAuthUrl, getAuthOrigin } from '@/lib/auth/google';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const origin = getAuthOrigin(request);
   const url = new URL(request.url);
   const action = url.searchParams.get('action') || 'signin';
   const role = url.searchParams.get('role') || 'buyer';
@@ -12,14 +13,10 @@ export async function GET(request: NextRequest) {
   const config = getGoogleConfig();
   if (!config) {
     return NextResponse.redirect(
-      new URL('/auth/signin.html?error=google_not_configured', request.url)
+      new URL('/auth/signin.html?error=google_not_configured', origin)
     );
   }
 
-  const origin =
-    process.env.APP_ORIGIN ??
-    request.headers.get('origin') ??
-    `${url.protocol}//${url.host}`;
   const redirectUri = `${origin}/api/auth/callback/google`;
 
   const statePayload = JSON.stringify({
