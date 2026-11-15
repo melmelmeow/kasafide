@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookieStore = cookies();
+    const response = NextResponse.json({ ok: true }, { headers });
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,11 +56,11 @@ export async function POST(request: NextRequest) {
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll();
+            return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              response.cookies.set(name, value, options),
             );
           },
         },
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 401, headers });
     }
 
-    return NextResponse.json({ ok: true }, { headers });
+    return response;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500, headers });
