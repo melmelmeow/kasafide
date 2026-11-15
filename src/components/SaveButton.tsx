@@ -1,51 +1,67 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { toggleSavePropertyAction } from "@/app/buyer/actions";
 
-/**
- * The only interactive part of a listing card. Saving goes straight to Supabase from the browser
- * (row level security limits it to the caller's own rows), then router.refresh() re-runs the server
- * components so every count and list on the page agrees.
- */
-export function SaveButton({ propertyId, initiallySaved }: { propertyId: string; initiallySaved: boolean }) {
-  const [saved, setSaved] = useState(initiallySaved);
-  const [error, setError] = useState("");
-  const [pending, startTransition] = useTransition();
-  const router = useRouter();
+interface SaveButtonProps {
+  propertyId: string;
+  initiallySaved?: boolean;
+  initialSaved?: boolean;
+  className?: string;
+}
 
-  async function toggle() {
-    setError("");
-    const next = !saved;
-    setSaved(next); // optimistic
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Please sign in to save listings.");
+export function SaveButton({
+  propertyId,
+  initiallySaved,
+  initialSaved,
+  className = "",
+}: SaveButtonProps) {
+  const [saved, setSaved] = useState(initiallySaved ?? initialSaved ?? false);
+  const [isPending, startTransition] = useTransition();
 
-      const res = next
-        ? await supabase.from("saved_properties").insert({ user_id: user.id, property_id: propertyId })
-        : await supabase.from("saved_properties").delete().eq("user_id", user.id).eq("property_id", propertyId);
-      if (res.error) throw new Error(res.error.message);
-      startTransition(() => router.refresh());
-    } catch (err) {
-      setSaved(!next);
-      setError(err instanceof Error ? err.message : "Could not update");
-    }
-  }
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Optimistic toggle
+    const nextSaved = !saved;
+    setSaved(nextSaved);
+
+    startTransition(async () => {
+      const res = await toggleSavePropertyAction(propertyId);
+      if (res.error) {
+        // Revert on error
+        setSaved(!nextSaved);
+      } else {
+        setSaved(res.saved);
+      }
+    });
+  };
 
   return (
     <button
       type="button"
-      onClick={toggle}
-      disabled={pending}
-      aria-pressed={saved}
-      aria-label={saved ? "Remove from saved" : "Save listing"}
-      title={error || undefined}
-      className="rounded-full bg-surface/90 px-3 py-1 text-xs font-semibold text-text shadow hover:bg-surface"
+      onClick={handleToggle}
+      disabled={isPending}
+      aria-label={saved ? "Remove from saved" : "Save property"}
+      className={`save-btn inline-flex items-center justify-center rounded-full p-2 transition-colors ${
+        saved
+          ? "bg-primary text-white"
+          : "bg-surface-soft text-text-muted hover:text-primary"
+      } ${className}`}
     >
-      {saved ? "♥ Saved" : "♡ Save"}
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill={saved ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
     </button>
   );
 }
