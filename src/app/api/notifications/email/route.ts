@@ -26,7 +26,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Role check — admin/superadmin only
     const { data: profile, error: profileError } = await adminClient
-      .from('users')
+      .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();

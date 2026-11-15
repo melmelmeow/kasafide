@@ -39,10 +39,19 @@ export async function POST(request: NextRequest) {
     const { email, password, firstName, lastName, phone, role } = parsed.data;
 
     // Step 1: Create auth user (email not confirmed yet)
+    // user_metadata is automatically processed by Supabase trigger handle_new_user()
+    // which creates or populates the profile row.
     const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
       email,
       password,
       email_confirm: false,
+      user_metadata: {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`.trim(),
+        phone_number: phone ?? null,
+        role,
+      },
     });
 
     if (createError || !createData.user) {
@@ -54,21 +63,22 @@ export async function POST(request: NextRequest) {
 
     const userId = createData.user.id;
 
-    // Step 2: Insert into users table
-    const { error: insertError } = await adminClient.from('users').insert({
+    // Step 2: Ensure profiles table is updated/upserted
+    const { error: profileError } = await adminClient.from('profiles').upsert({
       id: userId,
       email,
       first_name: firstName,
       last_name: lastName,
+      full_name: `${firstName} ${lastName}`.trim(),
       phone: phone ?? null,
       role,
       account_status: 'unverified',
     });
 
-    if (insertError) {
-      // Roll back auth user creation on profile insert failure
+    if (profileError) {
+      // Roll back auth user creation on profile failure
       await adminClient.auth.admin.deleteUser(userId);
-      return NextResponse.json({ error: insertError.message }, { status: 400 });
+      return NextResponse.json({ error: profileError.message }, { status: 400 });
     }
 
     // Step 3: Generate confirmation magic link
