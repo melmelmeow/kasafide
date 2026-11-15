@@ -22,7 +22,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="stylesheet" href="/assets/css/kasafide-theme.css" />
-        <link rel="stylesheet" href="/assets/css/auth.css" />
         <Script src="/assets/js/kasafide-theme.js" strategy="beforeInteractive" />
         <Script src="/assets/js/kasafide-logo.js" strategy="beforeInteractive" />
       </head>
