@@ -184,16 +184,35 @@ async function submitSignin() {
     // localStorage session remains intact for static module pages.
   }
 
-  // Coming from a protected page? Accept SSR-style ?redirect=/buyer/... paths.
+  // Coming from a protected page? Accept redirect paths.
   const back = new URLSearchParams(window.location.search).get('redirect');
-  if (back && /^\/[a-z/_-]+$/.test(back)) {
-    window.location.href = back;
-    return;
-  }
-  // Legacy pattern: module/buyer/[page].html — still supported during migration.
-  if (user.role === 'buyer' && back && /^module\/buyer\/[a-z-]+\.html(\?[\w=&-]*)?$/.test(back)) {
-    window.location.href = '../' + back;
-    return;
+  if (back) {
+    // If it's a module/ path or clean route, handle properly
+    if (/^\/module\/[a-z/_-]+\.html(\?[\w=&-]*)?$/.test(back)) {
+      window.location.href = back;
+      return;
+    }
+    if (/^module\/[a-z/_-]+\.html(\?[\w=&-]*)?$/.test(back)) {
+      window.location.href = '/' + back;
+      return;
+    }
+    // Clean routes mapping to module
+    if (back.startsWith('/buyer')) {
+      window.location.href = '/module/buyer/buyer.html';
+      return;
+    }
+    if (back.startsWith('/seller')) {
+      window.location.href = '/module/seller/seller.html';
+      return;
+    }
+    if (back.startsWith('/admin') || back.startsWith('/super-admin')) {
+      window.location.href = '/module/admin/admin.html';
+      return;
+    }
+    if (/^\/[a-z/_-]+$/.test(back)) {
+      window.location.href = back;
+      return;
+    }
   }
 
   redirectToDashboard(user.role);
