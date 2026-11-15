@@ -4,6 +4,7 @@ import Script from "next/script";
 import { redirect } from "next/navigation";
 import { getMe, homeFor } from "@/lib/auth";
 import { SignupForm } from "@/components/AuthForm";
+import { KasafideLogo } from "@/components/KasafideLogo";
 
 export const metadata: Metadata = {
   title: "Kasafide – Create an Account",
@@ -32,7 +33,7 @@ export default async function SignupPage() {
 
         <div className="auth-card auth-card--wide">
           <Link className="auth-card-brand" href="/">
-            <span className="kf-logo" data-size="28" role="img" aria-label="Kasafide logo"></span>
+            <KasafideLogo size={28} />
             Kasafide
           </Link>
 
