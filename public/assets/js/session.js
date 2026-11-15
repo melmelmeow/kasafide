@@ -65,11 +65,11 @@ function clearSession() {
 
 function redirectToDashboard(role) {
   const routes = {
-    buyer:             '/module/buyer/buyer.html',
-    seller:            '/module/seller/seller.html',
-    admin:             '/module/admin/admin.html',
-    superadmin:        '/module/super-admin/super-admin.html',
-    super_duper_admin: '/module/super-admin/super-admin.html',
+    buyer:             '/buyer/dashboard',
+    seller:            '/seller/dashboard',
+    admin:             '/admin/dashboard',
+    superadmin:        '/admin/dashboard',
+    super_duper_admin: '/admin/dashboard',
   };
   const dest = routes[role] || '/';
   window.location.href = dest;

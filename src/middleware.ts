@@ -55,7 +55,7 @@ export async function middleware(request: NextRequest) {
 
   if (matchedRoute) {
     if (!user) {
-      const redirectUrl = new URL('/auth/signin', request.url);
+      const redirectUrl = new URL('/auth/signin.html', request.url);
       redirectUrl.searchParams.set('redirect', pathname);
       const redirectRes = NextResponse.redirect(redirectUrl);
       response.cookies.getAll().forEach((cookie) => {
@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
 
     const userRole = profile?.role;
     if (!userRole || !matchedRoute.allowedRoles.includes(userRole)) {
-      const redirectUrl = new URL('/auth/signin', request.url);
+      const redirectUrl = new URL('/auth/signin.html', request.url);
       const redirectRes = NextResponse.redirect(redirectUrl);
       response.cookies.getAll().forEach((cookie) => {
         redirectRes.cookies.set(cookie.name, cookie.value);
