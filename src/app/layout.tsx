@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="/assets/css/kasafide-theme.css" />
         <Script src="/assets/js/kasafide-theme.js" strategy="beforeInteractive" />

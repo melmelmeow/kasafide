@@ -28,7 +28,8 @@ export function LoginForm({ next }: { next?: string }) {
         password,
       });
       if (authError) {
-        setError("Wrong email or password, or the email is not verified yet.");
+        console.error("[Auth] signInWithPassword error:", authError);
+        setError(authError.message || "Wrong email or password, or the email is not verified yet.");
         return;
       }
       const target = safeNext(next);
