@@ -130,6 +130,9 @@
       background: var(--teal); border-color: var(--teal);
       color: var(--on-primary);
     }
+    .listing-type-radio { position: absolute; opacity: 0; pointer-events: none; }
+    .listing-type-radio:checked + .pill-toggle { background: var(--teal); border-color: var(--teal); color: var(--on-primary); }
+    .listing-type-radio:focus-visible + .pill-toggle { outline: 2px solid var(--teal); outline-offset: 2px; }
 
     /* ── Toggle switch (Negotiable) ── */
     .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }

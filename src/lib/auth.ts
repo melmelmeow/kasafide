@@ -27,29 +27,30 @@ export type Me = {
 /** The signed-in user and their profile, or null. Cached per request, so layouts and pages share one lookup. */
 export const getMe = cache(async (): Promise<Me | null> => {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw new Error(`Could not verify the current user: ${authError.message}`);
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, full_name, first_name, last_name, email, avatar_url, role, account_status")
     .eq("id", user.id)
     .maybeSingle();
+  if (profileError) throw new Error(`Could not load the current user profile: ${profileError.message}`);
+  if (!profile) return null;
 
   return {
     supabase,
     user,
     profile: {
       id: user.id,
-      full_name: profile?.full_name ?? null,
-      first_name: profile?.first_name ?? null,
-      last_name: profile?.last_name ?? null,
-      email: profile?.email ?? user.email ?? null,
-      avatar_url: profile?.avatar_url ?? null,
-      role: (profile?.role as AppRole | undefined) ?? "buyer",
-      account_status: profile?.account_status ?? null,
+      full_name: profile.full_name ?? null,
+      first_name: profile.first_name ?? null,
+      last_name: profile.last_name ?? null,
+      email: profile.email ?? user.email ?? null,
+      avatar_url: profile.avatar_url ?? null,
+      role: profile.role as AppRole,
+      account_status: profile.account_status ?? null,
     },
   };
 });

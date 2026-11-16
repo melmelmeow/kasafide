@@ -38,8 +38,6 @@ function saveSession(user) {
 
 function getSession() {
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    if (raw) return JSON.parse(raw);
     if (typeof window !== 'undefined' && window.__kasafide_ssr_user) {
       const u = window.__kasafide_ssr_user;
       return {
@@ -47,12 +45,16 @@ function getSession() {
         role: u.role,
         firstName: u.firstName,
         lastName: u.lastName,
+        fullName: u.fullName,
         email: u.email,
         phone: u.phone,
         avatar: u.avatarUrl,
+        accountStatus: u.accountStatus,
         verified: true,
       };
     }
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) return JSON.parse(raw);
     return null;
   } catch (e) {
     return null;

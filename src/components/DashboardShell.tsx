@@ -45,6 +45,7 @@ export function DashboardShell({
 
   const initScript = `
     window.__kasafide_ssr_user = ${JSON.stringify(user)};
+    window.getSession = function () { return window.__kasafide_ssr_user; };
     // Apply saved theme before first paint (prevents flash)
     (function(){
       try {
@@ -62,7 +63,7 @@ export function DashboardShell({
   const sidebarInit = `
     if (typeof KasafideSidebar !== 'undefined') {
       KasafideSidebar.init({
-        activePage: ${JSON.stringify(activePage)},
+        activePage: window.location.pathname.split('/')[2] || ${JSON.stringify(activePage)},
         role: ${JSON.stringify(user.role)},
         user: window.__kasafide_ssr_user,
         signOutUrl: '/auth/signout',
@@ -115,7 +116,6 @@ export function DashboardShell({
       {/* Core JS — load after DOM is ready */}
       <Script src="/assets/js/kasafide-theme.js" strategy="afterInteractive" />
       <Script src="/assets/js/kasafide-logo.js" strategy="afterInteractive" />
-      <Script src="/assets/js/config.js" strategy="afterInteractive" />
       <Script src="/assets/js/session.js" strategy="afterInteractive" />
       <Script src="/components/sidebar.js" strategy="afterInteractive" />
       <Script src="/components/topbar.js" strategy="afterInteractive" />

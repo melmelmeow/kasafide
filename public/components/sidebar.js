@@ -593,7 +593,7 @@
         } else if (typeof clearSession === 'function') {
           clearSession();
         }
-        window.location.href = '../../index.html';
+        window.location.href = '/';
       });
     }
 
@@ -607,8 +607,8 @@
     // always lands on module/ regardless of which folder the current page is actually in, so this
     // resolves correctly both from a same-role page and from this one shared cross-role page.
     const NAV_ROUTES = {
-      buyer:      { dashboard: '../buyer/buyer.html', saved: '../buyer/saved.html', messages: '../buyer/messages.html', payments: '../buyer/payments.html' },
-      seller:     { dashboard: '../seller/seller.html', listings: '../seller/listings.html', tenants: '../seller/tenants.html', messages: '../seller/messages.html', payments: '../seller/payments.html' },
+      buyer:      { dashboard: '/buyer/dashboard', saved: '/buyer/saved', messages: '/buyer/messages', payments: '/buyer/payments' },
+      seller:     { dashboard: '/seller/dashboard', listings: '/seller/listings', tenants: '/seller/tenants', messages: '/seller/messages', payments: '/seller/payments' },
       admin:      { dashboard: '../admin/admin.html', listings: '../admin/listings.html', users: '../admin/users.html', reports: '../admin/reports.html', analytics: '../admin/analytics.html', payments: '../admin/payments.html' },
       superadmin: { dashboard: '../super-admin/super-admin.html', admins: '../super-admin/admins.html', 'audit-trail': '../super-admin/audit-trail.html', reports: '../super-admin/reports.html' },
       // Works across both folders: `..` always lands on module/, so no need to check which of
@@ -691,8 +691,8 @@
     // without a matching key here, that bottom-nav button got no click handler at all — not a
     // wrong destination, just silently did nothing.
     const BN_ROUTES = {
-      buyer:      { dashboard: '../buyer/buyer.html',       saved: '../buyer/saved.html',       messages: '../buyer/messages.html',  payments: '../buyer/payments.html' },
-      seller:     { dashboard: '../seller/seller.html',     listings: '../seller/listings.html', tenants: '../seller/tenants.html', messages: '../seller/messages.html', payments: '../seller/payments.html' },
+      buyer:      { dashboard: '/buyer/dashboard',       saved: '/buyer/saved',       messages: '/buyer/messages',  payments: '/buyer/payments' },
+      seller:     { dashboard: '/seller/dashboard',     listings: '/seller/listings', tenants: '/seller/tenants', messages: '/seller/messages', payments: '/seller/payments' },
       admin:      { dashboard: '../admin/admin.html',       listings: '../admin/listings.html',  users: '../admin/users.html', reports: '../admin/reports.html', analytics: '../admin/analytics.html', payments: '../admin/payments.html' },
       superadmin: { dashboard: '../super-admin/super-admin.html', admins: '../super-admin/admins.html', 'audit-trail': '../super-admin/audit-trail.html', reports: '../super-admin/reports.html' },
       super_duper_admin: { dashboard: '../super-admin/super-admin.html', admins: '../super-admin/admins.html', 'audit-trail': '../super-admin/audit-trail.html', reports: '../super-admin/reports.html' },

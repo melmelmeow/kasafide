@@ -623,9 +623,7 @@
 
     if (role === 'buyer' || role === 'seller') {
       global._hsOpenReverify = function() {
-        const p = window.location.pathname;
-        const verifyPath = p.includes('/module/') ? 'verification.html' : `module/${role}/verification.html`;
-        window.location.href = verifyPath;
+        window.location.href = `/${role}/verification`;
       };
     }
 
@@ -763,15 +761,7 @@
 
     // Navigate to full notifications page
     function goToNotifPage() {
-      const p = window.location.pathname;
-      // '../<folder>/' rather than a bare filename: module/buyer/listing.html is shared by buyers
-      // and sellers, and from there a bare name opened the buyer's page for a seller too.
-      const folder = (role === 'superadmin' || role === 'super_duper_admin') ? 'super-admin' : role;
-      let path;
-      if (p.includes('/module/'))    path = '../' + folder + '/notifications.html';
-      else if (p.includes('/auth/')) path = '../module/' + folder + '/notifications.html';
-      else                           path = 'module/' + folder + '/notifications.html';
-      window.location.href = path;
+      window.location.href = `/${role}/notifications`;
     }
 
     const seeAllBtn = el.querySelector('#hsNotifSeeAll');
@@ -811,29 +801,19 @@
         if (!btn) return;
         profileDropdown.classList.remove('open');
         const action = btn.dataset.action;
-        const p = window.location.pathname;
-        // The roles 'superadmin' and 'super_duper_admin' both live in module/super-admin/ — using
-        // the role name as the folder sent them to a nonexistent path (404). The pages there are
-        // profile.html / settings.html, same names as every other role's.
-        const folder = (role === 'superadmin' || role === 'super_duper_admin') ? 'super-admin' : role;
-        const basePath = p.includes('/module/') ? '../' + folder + '/' : 'module/' + folder + '/';
-
         if (action === 'profile') {
-          window.location.href = basePath + 'profile.html';
+          window.location.href = `/${role}/profile`;
         } else if (action === 'settings') {
-          window.location.href = basePath + 'settings.html';
+          window.location.href = `/${role}/settings`;
         } else if (action === 'help') {
-          window.location.href = basePath + 'help.html';
+          window.location.href = `/${role}/help`;
         } else if (action === 'reverify') {
           if (typeof global._hsOpenReverify === 'function') global._hsOpenReverify();
         } else if (action === 'logout') {
           // Was auth/signin.html — logging out should land on the public landing page, not
           // straight back at a sign-in form.
-          const logoutPath = p.includes('/module/') ? '../../index.html'
-            : p.includes('/auth/') ? '../index.html'
-            : 'index.html';
           // Sign out of Supabase too (not just the cached copy), then leave.
-          const done = () => { window.location.href = logoutPath; };
+          const done = () => { window.location.href = '/'; };
           if (typeof hsSignOut === 'function') hsSignOut().then(done, done);
           else { if (typeof clearSession === 'function') clearSession(); done(); }
         }

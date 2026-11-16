@@ -205,6 +205,9 @@ body {
 }
 
 .listing-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -212,6 +215,20 @@ body {
   transition: all 0.2s;
   cursor: pointer;
   box-shadow: var(--shadow);
+}
+
+.listing-image-empty {
+  background: linear-gradient(135deg, var(--surface-soft), var(--border));
+}
+
+.browse-filter-error {
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  border: 1px solid rgb(var(--warning-rgb) / 0.35);
+  border-radius: 10px;
+  background: rgb(var(--warning-rgb) / 0.08);
+  color: var(--text);
+  font-size: 13px;
 }
 
 .listing-card:hover {

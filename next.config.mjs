@@ -17,27 +17,6 @@ const nextConfig = {
   async rewrites() {
     return [
       // ── Clean routes rewritten only for pages not yet in App Router ──────────
-      { source: "/buyer/messages",      destination: "/module/buyer/messages.html" },
-      { source: "/buyer/profile",       destination: "/module/buyer/profile.html" },
-      { source: "/buyer/settings",      destination: "/module/buyer/settings.html" },
-      { source: "/buyer/reviews",       destination: "/module/buyer/reviews.html" },
-      { source: "/buyer/notifications", destination: "/module/buyer/notifications.html" },
-      { source: "/buyer/help",          destination: "/module/buyer/help.html" },
-      { source: "/buyer/verification",  destination: "/module/buyer/verification.html" },
-
-      { source: "/seller/post",             destination: "/module/seller/post.html" },
-      { source: "/seller/payments",         destination: "/module/seller/payments.html" },
-      { source: "/seller/messages",         destination: "/module/seller/messages.html" },
-      { source: "/seller/settings",         destination: "/module/seller/settings.html" },
-      { source: "/seller/profile",          destination: "/module/seller/profile.html" },
-      { source: "/seller/reviews",          destination: "/module/seller/reviews.html" },
-      { source: "/seller/viewing-requests", destination: "/module/seller/viewing-requests.html" },
-      { source: "/seller/verification",     destination: "/module/seller/verification.html" },
-      { source: "/seller/notifications",    destination: "/module/seller/notifications.html" },
-      { source: "/seller/tenants",          destination: "/module/seller/tenants.html" },
-      { source: "/seller/help",             destination: "/module/seller/help.html" },
-      { source: "/seller/moa",              destination: "/module/seller/moa.html" },
-
       { source: "/admin/analytics",     destination: "/module/admin/analytics.html" },
       { source: "/admin/reports",       destination: "/module/admin/reports.html" },
       { source: "/admin/settings",      destination: "/module/admin/settings.html" },
@@ -52,7 +31,6 @@ const nextConfig = {
       { source: "/auth/forgot-password", destination: "/auth/forgot-password.html" },
 
       { source: "/about",          destination: "/about.html" },
-      { source: "/browse",         destination: "/browse.html" },
       { source: "/faqs",           destination: "/faqs.html" },
       { source: "/help",           destination: "/help.html" },
       { source: "/privacy-policy", destination: "/privacy-policy.html" },
