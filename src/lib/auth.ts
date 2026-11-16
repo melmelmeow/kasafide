@@ -28,8 +28,7 @@ export type Me = {
 export const getMe = cache(async (): Promise<Me | null> => {
   const supabase = createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError) throw new Error(`Could not verify the current user: ${authError.message}`);
-  if (!user) return null;
+  if (authError || !user) return null;
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
