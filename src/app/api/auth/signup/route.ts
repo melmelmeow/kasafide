@@ -2,6 +2,7 @@ import { adminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
+import { getAuthOrigin } from '@/lib/auth/google';
 
 const SignupSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -82,10 +83,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 3: Generate confirmation magic link
-    const origin =
-      process.env.APP_ORIGIN ??
-      request.headers.get('origin') ??
-      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    const origin = getAuthOrigin(request);
 
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: 'signup',

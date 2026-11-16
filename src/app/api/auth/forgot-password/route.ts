@@ -1,6 +1,7 @@
 import { adminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { getAuthOrigin } from '@/lib/auth/google';
 
 function createMailTransporter() {
   return nodemailer.createTransport({
@@ -24,10 +25,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    const origin =
-      process.env.APP_ORIGIN ??
-      request.headers.get('origin') ??
-      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    const origin = getAuthOrigin(request);
 
     const { data, error } = await adminClient.auth.admin.generateLink({
       type: 'recovery',

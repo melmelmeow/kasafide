@@ -1,4 +1,5 @@
 import dns from 'node:dns';
+import type { NextRequest } from 'next/server';
 
 if (typeof dns.setDefaultResultOrder === 'function') {
   try {
@@ -22,6 +23,41 @@ export type GoogleUserInfo = {
   family_name?: string;
   picture?: string;
 };
+
+export function getAuthOrigin(request: NextRequest): string {
+  // 1. Explicit APP_ORIGIN override
+  if (process.env.APP_ORIGIN) {
+    return process.env.APP_ORIGIN.trim().replace(/\/$/, '');
+  }
+
+  // 2. Forwarded headers from reverse proxies (Lando, Traefik, Nginx, Vercel)
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+
+  // 3. Fall back to host header or request URL host
+  let host =
+    forwardedHost ||
+    request.headers.get('host') ||
+    request.nextUrl?.host ||
+    new URL(request.url).host;
+
+  const proto =
+    forwardedProto ||
+    (request.headers.get('x-forwarded-ssl') === 'on' ? 'https' : null) ||
+    request.nextUrl?.protocol?.replace(':', '') ||
+    new URL(request.url).protocol.replace(':', '') ||
+    'http';
+
+  // 4. Sanitize 0.0.0.0: never return 0.0.0.0 to a client browser or OAuth provider
+  if (!host || host.startsWith('0.0.0.0')) {
+    if (process.env.NEXT_PUBLIC_SITE_URL) {
+      return process.env.NEXT_PUBLIC_SITE_URL.trim().replace(/\/$/, '');
+    }
+    host = host ? host.replace(/^0\.0\.0\.0/, 'localhost') : 'localhost:3000';
+  }
+
+  return `${proto}://${host}`;
+}
 
 function cleanEnv(val: string | undefined): string {
   if (!val) return '';

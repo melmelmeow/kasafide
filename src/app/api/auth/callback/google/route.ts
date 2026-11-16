@@ -2,18 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { adminClient } from '@/lib/supabase/admin';
-import { getGoogleConfig, exchangeGoogleCode, getGoogleUserInfo } from '@/lib/auth/google';
+import { getGoogleConfig, exchangeGoogleCode, getGoogleUserInfo, getAuthOrigin } from '@/lib/auth/google';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const origin = getAuthOrigin(request);
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const stateRaw = url.searchParams.get('state');
   const errorParam = url.searchParams.get('error');
 
   const signinUrl = (err: string) =>
-    NextResponse.redirect(new URL(`/auth/signin.html?error=${err}`, request.url));
+    NextResponse.redirect(new URL(`/auth/signin.html?error=${err}`, origin));
 
   if (errorParam) {
     return signinUrl('google_cancelled');
@@ -37,10 +38,6 @@ export async function GET(request: NextRequest) {
     return signinUrl('google_not_configured');
   }
 
-  const origin =
-    process.env.APP_ORIGIN ??
-    request.headers.get('origin') ??
-    `${url.protocol}//${url.host}`;
   const redirectUri = `${origin}/api/auth/callback/google`;
 
   let tokens;
@@ -151,7 +148,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.redirect(
     new URL(
       `/auth/callback.html#access_token=${access_token}&refresh_token=${refresh_token}${redirectParam}`,
-      request.url
+      origin
     )
   );
 }
