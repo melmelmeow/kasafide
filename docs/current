@@ -1,0 +1,46 @@
+
+# Current Next.js Route Inventory
+
+Based on the current worktree. The app uses the App Router; dynamic buyer and seller routes are supported by catch-all pages. See `next.config.mjs` for routes that still rewrite to static HTML.
+
+## UI pages
+
+| Route | Implementation / purpose |
+|---|---|
+| `/` | SSR public landing page — `src/app/page.tsx` |
+| `/browse` | SSR property browse/search — `src/app/browse/page.tsx` |
+| `/property/[id]` | SSR property details — `src/app/property/[id]/page.tsx` |
+| `/login`, `/signup` | Root auth aliases |
+| `/auth/login`, `/auth/signup`, `/auth/continue` | Auth pages and onboarding |
+| `/buyer`, `/buyer/dashboard` | Buyer entry and dashboard |
+| `/buyer/saved`, `/buyer/payments` | Explicit buyer pages |
+| `/buyer/messages`, `/buyer/profile`, `/buyer/verification`, `/buyer/reviews`, `/buyer/settings`, `/buyer/notifications`, `/buyer/help` | Buyer pages rendered through `/buyer/[page]` — `src/app/buyer/[page]/page.tsx` |
+| `/seller`, `/seller/dashboard`, `/seller/listings` | Seller entry, dashboard, and listings |
+| `/seller/post`, `/seller/payments`, `/seller/messages`, `/seller/tenants`, `/seller/verification`, `/seller/viewing-requests`, `/seller/profile`, `/seller/settings`, `/seller/reviews`, `/seller/notifications`, `/seller/help`, `/seller/moa` | Seller pages rendered through `/seller/[page]` — `src/app/seller/[page]/page.tsx` |
+| `/admin`, `/admin/dashboard`, `/admin/listings`, `/admin/payments`, `/admin/users` | Admin App Router pages |
+| `/super-admin` | Super-admin entry page |
+
+### Routes still rewritten to static HTML
+
+- `/admin/analytics`, `/admin/reports`, `/admin/settings`, `/admin/notifications`
+- `/super-admin/dashboard`, `/super-admin/admins`, `/super-admin/audit-trail`, `/super-admin/reports`
+- `/auth/signin`, `/auth/forgot-password`
+- `/about`, `/faqs`, `/help`, `/privacy-policy`, `/terms`
+
+## API route handlers
+
+| Endpoint | Methods |
+|---|---|
+| `/api/ai/customer-service` | `POST` |
+| `/api/auth/signup`, `/api/auth/reset-password`, `/api/auth/forgot-password`, `/api/auth/signout` | `POST` |
+| `/api/auth/google`, `/api/auth/callback`, `/api/auth/callback/google` | `GET` |
+| `/api/notifications/email` | `POST` |
+| `/api/payments/confirm`, `/api/payments/create-invoice`, `/api/payments/manual-proof` | `POST` |
+| `/api/refunds/request`, `/api/refunds/disburse` | `POST` |
+| `/api/seller/listings` | `POST` |
+| `/api/verify/documents`, `/api/verify/ocr` | `POST` |
+| `/api/webhooks/xendit` | `POST` |
+| `/auth/callback`, `/auth/confirm` | `GET` |
+| `/auth/signout` | `GET`, `POST` |
+
+The previous inventory’s “no dynamic segments” statement is no longer accurate. `/api/google`, `/api/auth/set-cookie`, and `/api/auth/set-session` are not present in the current route files.
