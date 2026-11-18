@@ -46,26 +46,30 @@ async function getLiveListingCounts(supabase: ReturnType<typeof createClient>) {
   let total = 0;
   let offset = 0;
 
-  while (true) {
-    const { data, error } = await supabase
-      .from("properties")
-      .select("id, barangays(name)")
-      .eq("status", "approved")
-      .or("lifecycle_status.is.null,lifecycle_status.not.in.(sold,rented)")
-      .order("id", { ascending: true })
-      .range(offset, offset + pageSize - 1);
+  try {
+    while (true) {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("id, barangays(name)")
+        .eq("status", "approved")
+        .or("lifecycle_status.is.null,lifecycle_status.not.in.(sold,rented)")
+        .order("id", { ascending: true })
+        .range(offset, offset + pageSize - 1);
 
-    if (error) throw new Error(`Could not load live listing counts: ${error.message}`);
+      if (error) break;
 
-    const rows = (data ?? []) as LocationRow[];
-    total += rows.length;
-    for (const row of rows) {
-      const name = getBarangayName(row);
-      if (name) counts[name] = (counts[name] ?? 0) + 1;
+      const rows = (data ?? []) as LocationRow[];
+      total += rows.length;
+      for (const row of rows) {
+        const name = getBarangayName(row);
+        if (name) counts[name] = (counts[name] ?? 0) + 1;
+      }
+
+      if (rows.length < pageSize) break;
+      offset += pageSize;
     }
-
-    if (rows.length < pageSize) break;
-    offset += pageSize;
+  } catch (e) {
+    console.warn("Could not load live listing counts:", e);
   }
 
   return { counts, total };
@@ -73,37 +77,37 @@ async function getLiveListingCounts(supabase: ReturnType<typeof createClient>) {
 
 export default async function HomePage() {
   const supabase = createClient();
-  const [featuredResult, sellersResult, barangaysResult, listingStats] = await Promise.all([
-    supabase
-      .from("properties")
-      .select("id, title, price, listing_type, images, thumbnail_url, address, bedrooms, bathrooms, floor_area_sqm, barangays(name)")
-      .eq("status", "approved")
-      .or("lifecycle_status.is.null,lifecycle_status.not.in.(sold,rented)")
-      .order("featured", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(8),
-    supabase
-      .from("public_profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "seller")
-      .eq("account_status", "verified"),
-    supabase.from("barangays").select("id, name").order("name"),
-    getLiveListingCounts(supabase),
-  ]);
+  let featuredListings: LandingProperty[] = [];
+  let barangays: { id: number; name: string }[] = [];
+  let verifiedSellers = 0;
+  let listingStats = { counts: {} as Record<string, number>, total: 0 };
 
-  if (featuredResult.error) {
-    throw new Error(`Could not load featured listings: ${featuredResult.error.message}`);
-  }
-  if (sellersResult.error) {
-    throw new Error(`Could not load verified seller count: ${sellersResult.error.message}`);
-  }
-  if (barangaysResult.error) {
-    throw new Error(`Could not load barangays: ${barangaysResult.error.message}`);
-  }
+  try {
+    const [featuredResult, sellersResult, barangaysResult, stats] = await Promise.all([
+      supabase
+        .from("properties")
+        .select("id, title, price, listing_type, images, thumbnail_url, address, bedrooms, bathrooms, floor_area_sqm, barangays(name)")
+        .eq("status", "approved")
+        .or("lifecycle_status.is.null,lifecycle_status.not.in.(sold,rented)")
+        .order("featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("public_profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "seller")
+        .eq("account_status", "verified"),
+      supabase.from("barangays").select("id, name").order("name"),
+      getLiveListingCounts(supabase),
+    ]);
 
-  const featuredListings = (featuredResult.data ?? []) as unknown as LandingProperty[];
-  const barangays = barangaysResult.data ?? [];
-  const verifiedSellers = sellersResult.count ?? 0;
+    featuredListings = (featuredResult.data ?? []) as unknown as LandingProperty[];
+    barangays = barangaysResult.data ?? [];
+    verifiedSellers = sellersResult.count ?? 0;
+    listingStats = stats;
+  } catch (err) {
+    console.error("HomePage data fetching error:", err);
+  }
 
   return (
     <>
