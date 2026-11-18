@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
+import { AuthProvider } from '@/components/providers/AuthProvider';
+import { TRPCProvider } from '@/components/providers/TRPCProvider';
 import './globals.css';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -9,7 +11,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Kasafide',
+  title: 'Kasafide | Verified homes in Sta. Maria',
   description: 'Verified homes in Sta. Maria, Bulacan.',
   icons: {
     icon: [
@@ -33,7 +35,13 @@ export default function RootLayout({
         <Script src="/assets/js/kasafide-theme.js" strategy="beforeInteractive" />
         <Script src="/assets/js/kasafide-logo.js" strategy="beforeInteractive" />
       </head>
-      <body className={plusJakartaSans.className} suppressHydrationWarning>{children}</body>
+      <body className={plusJakartaSans.className} suppressHydrationWarning>
+        <AuthProvider>
+          <TRPCProvider>
+            {children}
+          </TRPCProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

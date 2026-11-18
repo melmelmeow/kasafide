@@ -1,21 +1,30 @@
-name: kasafide 
+name: kasafide
 
 config:
   via: cli
-  # Points Lando to the root directory where package.json lives
   approot: .
+
 services:
   node-dev:
-    type: node:22
+    type: node:20
     port: '3000'
-    build: 
-      - npm install
+    portforward: 3000
+    ssl: true
+    run_as_root:
+      - npm install -g npm@latest
+    build:
+      - npm install --legacy-peer-deps
+      - npx prisma generate
     command: npm run dev
+
 proxy:
   node-dev:
-    - kasafide.lndo.site:3000
+    - kasafide.lndo.site
+
 tooling:
   npm:
     service: node-dev
   node:
+    service: node-dev
+  prisma:
     service: node-dev

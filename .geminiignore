@@ -4,13 +4,6 @@
 node_modules/
 .pnpm-store/
 
-# Next.js Build Output & Cache
-.next/
-out/
-build/
-dist/
-tsconfig.tsbuildinfo
-
 # Environment & Sensitive Files
 .env
 .env.*
@@ -20,11 +13,6 @@ tsconfig.tsbuildinfo
 *.p12
 *.json-key
 service-account*.json
-
-# Database Dumps & Backups
-*.dump
-*.sql.gz
-supabase_backup.dump
 
 # Logs & Debug Output
 *.log
